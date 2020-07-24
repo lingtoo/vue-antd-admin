@@ -21,6 +21,15 @@
 - 常见问题：https://iczer.github.io/vue-antd-admin/start/faq.html
 - 国内镜像：https://gitee.com/iczer/vue-antd-admin
 
+
+## Fork改动说明
+添加动态菜单权限管理
+
+![image](./src/assets/img/sysmgr.png)
+
+
+
+
 ## 浏览器支持
 现代浏览器及 IE10
 
