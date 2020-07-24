@@ -35,7 +35,7 @@ export default {
           line-height: 22px;
         }
         span:first-child {
-          background-color: @layout-bg-color;
+          background-color: @bg-color;
           border-radius: 20px;
           display: inline-block;
           font-size: 12px;

@@ -1,16 +1,20 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import modules from './modules'
-import PouchDB from 'pouchdb'
+import account from './modules/account'
+import setting from './modules/setting'
+import permission from './modules/async-router'
+import user from './modules/user'
 
-const db = new PouchDB('adminDb')
+import getters from './getters'
 
 Vue.use(Vuex)
 
-const store = new Vuex.Store({modules})
-// 读取用户信息
-db.get('currUser')
-  .then(doc => store.commit('account/setUser', doc.user))
-  .catch(() => {})
-
-export default store
+export default new Vuex.Store({
+  modules: {
+    account,
+    setting,
+    user,
+    permission
+  },
+  getters
+})

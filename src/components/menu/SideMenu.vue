@@ -6,16 +6,17 @@
         <h1>{{systemName}}</h1>
       </router-link>
     </div>
-    <i-menu :theme="theme" :collapsed="collapsed" :options="menuData" @select="onSelect" class="menu"/>
+    <i-menu @i18nComplete="setRoutesI18n" :i18n="menuI18n" :theme="theme" :collapsed="collapsed" :options="menuData" @select="onSelect" class="menu"/>
   </a-layout-sider>
 </template>
 
 <script>
 import IMenu from './menu'
-import {mapState} from 'vuex'
+import {mapState, mapMutations} from 'vuex'
 export default {
   name: 'SideMenu',
   components: {IMenu},
+  inject: ['menuI18n'],
   props: {
     collapsible: {
       type: Boolean,
@@ -46,7 +47,8 @@ export default {
   methods: {
     onSelect (obj) {
       this.$emit('menuSelect', obj)
-    }
+    },
+    ...mapMutations('setting', ['setRoutesI18n'])
   }
 }
 </script>

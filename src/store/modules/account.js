@@ -5,12 +5,7 @@ let db = new PouchDB('adminDb')
 export default {
   namespaced: true,
   state: {
-    user: {
-      name: '',
-      avatar: '',
-      position: '',
-      address: ''
-    }
+    user: {}
   },
   mutations: {
     setUser (state, user) {

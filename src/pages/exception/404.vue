@@ -1,5 +1,5 @@
 <template>
-  <exception-page :style="`min-height: ${minHeight}px`" type="404" />
+  <exception-page :style="`margin-top: ${marginTop}px; min-height: ${minHeight}px`" type="404" />
 </template>
 
 <script>
@@ -11,9 +11,11 @@ export default {
   inject: ['layoutMinHeight'],
   computed: {
     ...mapState('setting', ['multiPage']),
+    marginTop() {
+      return this.multiPage ? -24 : 0
+    },
     minHeight() {
-      let layoutMinHeight = this.layoutMinHeight || window.innerHeight
-      return this.multiPage ? layoutMinHeight - 32 : layoutMinHeight
+      return this.multiPage ? this.layoutMinHeight - 32 : this.layoutMinHeight
     }
   }
 }

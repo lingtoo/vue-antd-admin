@@ -1,17 +1,17 @@
 <template>
   <a-config-provider :locale="locale">
-    <router-view/>
+    <router-view />
   </a-config-provider>
 </template>
 
 <script>
 import enquireScreen from './utils/device'
-import {mapState} from 'vuex'
+import { mapState } from 'vuex'
 import themeUtil from '@/utils/themeUtil';
 
 export default {
   name: 'App',
-  data() {
+  data () {
     return {
       locale: {}
     }
@@ -23,23 +23,24 @@ export default {
       _this.$store.commit('setting/setDevice', isMobile)
     })
   },
-  mounted() {
-   this.setWeekModeTheme(this.weekMode)
+  mounted () {
+    this.setWeekModeTheme(this.weekMode)
+    this.setDefaultTheme()
   },
   watch: {
-    weekMode(val) {
+    weekMode (val) {
       this.setWeekModeTheme(val)
     },
-    lang(val) {
+    lang (val) {
       this.setLanguage(val)
     },
-    'theme.mode': function(val) {
+    'theme.mode': function (val) {
       let closeMessage = this.$message.loading(`您选择了主题模式 ${val}, 正在切换...`)
       themeUtil.changeThemeColor(this.theme.color, val).then(() => {
         setTimeout(closeMessage, 1000)
       })
     },
-    'theme.color': function(val) {
+    'theme.color': function (val) {
       let closeMessage = this.$message.loading(`您选择了主题色 ${val}, 正在切换...`)
       themeUtil.changeThemeColor(val, this.theme.mode).then(() => {
         setTimeout(closeMessage, 1000)
@@ -49,15 +50,22 @@ export default {
   computed: {
     ...mapState('setting', ['theme', 'weekMode', 'lang'])
   },
+
+
   methods: {
-    setWeekModeTheme(weekMode) {
+    setWeekModeTheme (weekMode) {
       if (weekMode) {
         document.body.classList.add('week-mode')
       } else {
         document.body.classList.remove('week-mode')
       }
     },
-    setLanguage(lang) {
+    setDefaultTheme () {
+      let store = this.$store
+      let theme = store.state.setting.theme
+      store.commit('setting/setTheme', { mode: 'dark', color: theme.color })
+    },
+    setLanguage (lang) {
       this.$i18n.locale = lang
       switch (lang) {
         case 'CN':
@@ -77,6 +85,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  #id{
-  }
+#id {
+}
 </style>

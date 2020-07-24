@@ -1,13 +1,14 @@
 const client = require('webpack-theme-color-replacer/client')
-const {theme} = require('../config')
-const {getMenuColors, getAntdColors, getThemeToggleColors, getFunctionalColors} = require('../utils/colors')
-const {ANTD} = require('../config/default')
+const { theme } = require('../config')
+const { getMenuColors, getAntdColors, getThemeToggleColors, getFunctionalColors } = require('../utils/colors')
+const { ANTD } = require('../config/default')
 
 module.exports = {
-  getThemeColors(color, $theme) {
+  getThemeColors (color, $theme) {
     const _color = color || theme.color
     const mode = $theme || theme.mode
     const replaceColors = getThemeToggleColors(_color, mode)
+    //console.log("color::", color, $theme, replaceColors)
     const themeColors = [
       ...replaceColors.mainColors,
       ...replaceColors.subColors,
@@ -21,14 +22,25 @@ module.exports = {
     return themeColors
   },
   changeThemeColor (newColor, $theme) {
-    let promise = client.changer.changeColor({newColors: this.getThemeColors(newColor, $theme)})
-    return promise
+    // let cssUrl = "/" + window.__theme_COLOR_cfg
+    // console.log("cssUrl::", cssUrl)
+    // let promise = client.changer.changeColor({ newColors: this.getThemeColors(newColor, $theme), cssUrl })
+    // return promise
+
+    let options = {
+      newColors: this.getThemeColors(newColor, $theme), // new colors array, one-to-one corresponde with `matchColors`
+      changeUrl (cssUrl) {
+        return `/${cssUrl}` // while router is not `hash` mode, it needs absolute path
+      }
+    }
+    return client.changer.changeColor(options, Promise)
+
   },
-  modifyVars(color) {
+  modifyVars (color) {
     let _color = color || theme.color
     const palettes = getAntdColors(_color, theme.mode)
     const menuColors = getMenuColors(_color, theme.mode)
-    const {success, warning, error} = getFunctionalColors(theme.mode)
+    const { success, warning, error } = getFunctionalColors(theme.mode)
     const primary = palettes[5]
     return {
       'primary-color': primary,

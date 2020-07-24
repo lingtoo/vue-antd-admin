@@ -95,27 +95,15 @@
       <standard-table
         :columns="columns"
         :dataSource="dataSource"
-        :selectedRows.sync="selectedRows"
-        @clear="onClear"
-        @change="onChange"
-        @selectedRowChange="onSelectChange"
-      >
-        <div slot="description" slot-scope="{text}">
-          {{text}}
-        </div>
-        <div slot="action" slot-scope="{text, record, index}">
-          <a-icon type="edit" />{{index}}
-        </div>
-        <template slot="statusTitle">
-          <a-icon @click.native="onStatusTitleClick" type="info-circle" />
-        </template>
-      </standard-table>
+        :selectedRows="selectedRows"
+        @change="onchange"
+      />
     </div>
   </a-card>
 </template>
 
 <script>
-import StandardTable from '@/components/table/StandardTable'
+import StandardTable from '../../components/table/StandardTable'
 const columns = [
   {
     title: '规则编号',
@@ -123,8 +111,7 @@ const columns = [
   },
   {
     title: '描述',
-    dataIndex: 'description',
-    scopedSlots: { customRender: 'description' }
+    dataIndex: 'description'
   },
   {
     title: '服务调用次数',
@@ -134,18 +121,14 @@ const columns = [
     customRender: (text) => text + ' 次'
   },
   {
+    title: '状态',
     dataIndex: 'status',
-    needTotal: true,
-    slots: {title: 'statusTitle'}
+    needTotal: true
   },
   {
     title: '更新时间',
     dataIndex: 'updatedAt',
     sorter: true
-  },
-  {
-    title: '操作',
-    scopedSlots: { customRender: 'action' }
   }
 ]
 
@@ -170,6 +153,7 @@ export default {
       advanced: true,
       columns: columns,
       dataSource: dataSource,
+      selectedRowKeys: [],
       selectedRows: []
     }
   },
@@ -177,21 +161,13 @@ export default {
     toggleAdvanced () {
       this.advanced = !this.advanced
     },
+    onchange (selectedRowKeys, selectedRows) {
+      this.selectedRowKeys = selectedRowKeys
+      this.selectedRows = selectedRows
+    },
     remove () {
-      this.dataSource = this.dataSource.filter(item => this.selectedRows.findIndex(row => row.key === item.key) === -1)
-      this.selectedRows = []
-    },
-    onClear() {
-      this.$message.info('您清空了勾选的所有行')
-    },
-    onStatusTitleClick() {
-      this.$message.info('你点击了状态栏表头')
-    },
-    onChange() {
-      this.$message.info('表格状态改变了')
-    },
-    onSelectChange() {
-      this.$message.info('选中行改变了')
+      this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
     },
     addNew () {
       this.dataSource.unshift({

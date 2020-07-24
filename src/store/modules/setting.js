@@ -1,11 +1,12 @@
 import config from '@/config'
 import {ADMIN} from '@/config/default'
-export default {
+const setting =  {
   namespaced: true,
   state: {
     isMobile: false,
     animates: ADMIN.animates,
     palettes: ADMIN.palettes,
+    routesI18n: {},
     dustbins: [],
     ...config,
   },
@@ -15,6 +16,7 @@ export default {
     },
     setTheme (state, theme) {
       state.theme = theme
+      //console.log("state.theme::",state.theme)
     },
     setLayout (state, layout) {
       state.layout = layout
@@ -37,6 +39,9 @@ export default {
     setLang(state, lang) {
       state.lang = lang
     },
+    setRoutesI18n(state, i18n) {
+      state.routesI18n = i18n
+    },
     setHideSetting(state, hideSetting) {
       state.hideSetting = hideSetting
     },
@@ -45,3 +50,5 @@ export default {
     }
   }
 }
+
+export default setting

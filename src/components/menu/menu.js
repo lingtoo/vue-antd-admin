@@ -31,8 +31,9 @@
  **/
 import Menu from 'ant-design-vue/es/menu'
 import Icon from 'ant-design-vue/es/icon'
+import '@/utils/Objects'
 
-const {Item, SubMenu} = Menu
+const { Item, SubMenu } = Menu
 
 export default {
   name: 'IMenu',
@@ -73,19 +74,26 @@ export default {
       })
       return keys
     },
-    menuTheme() {
+    menuTheme () {
       return this.theme == 'light' ? this.theme : 'dark'
     }
   },
-  created () {
-    this.updateMenu()
-    // 自定义国际化配置
-    if(this.i18n && this.i18n.messages) {
-      const messages = this.i18n.messages
-      Object.keys(messages).forEach(key => {
-        this.$i18n.mergeLocaleMessage(key, messages[key])
+  beforeMount () {
+    let CN = this.generateI18n(new Object(), this.options, 'name')
+    let US = this.generateI18n(new Object(), this.options, 'name')
+   // console.log("---cn::", CN)
+    this.$i18n.setLocaleMessage('CN', CN)
+    this.$i18n.setLocaleMessage('US', US)
+    if (this.i18n) {
+      Object.keys(this.i18n).forEach(key => {
+        this.$i18n.mergeLocaleMessage(key, this.i18n[key])
       })
     }
+    this.$emit('i18nComplete', this.$i18n._getMessages())
+  },
+  created () {
+    this.updateMenu()
+    this.formatOptions(this.options, '')
   },
   watch: {
     collapsed (val) {
@@ -102,13 +110,13 @@ export default {
   },
   methods: {
     renderIcon: function (h, icon) {
-      return !icon || icon == 'none' ? null : h(Icon, {props: {type:  icon}})
+      return !icon || icon == 'none' ? null : h(Icon, { props: { type: icon } })
     },
     renderMenuItem: function (h, menu) {
       return h(
-        Item, {key: menu.fullPath},
+        Item, { key: menu.fullPath },
         [
-          h('router-link', {props: {to: menu.fullPath}},
+          h('router-link', { props: { to: menu.fullPath } },
             [
               this.renderIcon(h, menu.meta ? menu.meta.icon : 'none'),
               h('span', [this.$t(menu.fullPath.substring(1).replace(new RegExp('/', 'g'), '.') + '.name')])
@@ -119,7 +127,7 @@ export default {
     },
     renderSubMenu: function (h, menu) {
       let this_ = this
-      let subItem = [h('span', {slot: 'title'},
+      let subItem = [h('span', { slot: 'title' },
         [
           this.renderIcon(h, menu.meta ? menu.meta.icon : 'none'),
           h('span', [this.$t(menu.fullPath.substring(1).replace(new RegExp('/', 'g'), '.') + '.name')])
@@ -129,7 +137,7 @@ export default {
       menu.children.forEach(function (item) {
         itemArr.push(this_.renderItem(h, item))
       })
-      return h(SubMenu, {key: menu.fullPath},
+      return h(SubMenu, { key: menu.fullPath },
         subItem.concat(itemArr)
       )
     },
@@ -158,7 +166,8 @@ export default {
       })
       return menuArr
     },
-    formatOptions(options, parentPath) {
+    formatOptions (options, parentPath) {
+      //console.log("---options::", options)
       let this_ = this
       options.forEach(route => {
         let isFullPath = route.path.substring(0, 1) == '/'
@@ -191,6 +200,18 @@ export default {
         return this.getSelectedKey(route.parent)
       }
       return route.path
+    },
+    generateI18n (lang, options, valueKey) {
+      options.forEach(menu => {
+        let keys = menu.fullPath.substring(1).split('/').concat('name')
+        //console.log("keys::",keys,menu[valueKey])
+        lang.assignProps(keys, menu[valueKey])
+        //lang.assignProps([menu.name, 'name'], menu[valueKey])
+        if (menu.children) {
+          this.generateI18n(lang, menu.children, valueKey)
+        }
+      })
+      return lang
     }
   },
   render (h) {
@@ -207,6 +228,7 @@ export default {
           openChange: this.onOpenChange,
           select: (obj) => {
             this.selectedKeys = obj.selectedKeys
+            //console.log("...select menu::.", obj)
             this.$emit('select', obj)
           }
         }

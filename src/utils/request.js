@@ -1,107 +1,78 @@
 import axios from 'axios'
-import Cookie from 'js-cookie'
+import store from '@/store'
+import storage from 'store'
+import notification from 'ant-design-vue/es/notification'
+import { VueAxios } from './axios'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
 
-// 跨域认证信息 header 名
-const xsrfHeaderName = 'Authorization'
+// 创建 axios 实例
+const request = axios.create({
+  // API 请求的默认前缀
+  baseURL: process.env.VUE_APP_API_BASE_URL,
+  timeout: 6000 // 请求超时时间
+})
 
-axios.defaults.timeout = 5000
-axios.defaults.withCredentials= true
-axios.defaults.xsrfHeaderName= xsrfHeaderName
-axios.defaults.xsrfCookieName= xsrfHeaderName
-
-// 认证类型
-const AUTH_TYPE = {
-  BEARER: 'Bearer',
-  BASIC: 'basic',
-  AUTH1: 'auth1',
-  AUTH2: 'auth2',
+// 异常拦截处理器
+const errorHandler = (error) => {
+  if (error.response) {
+    const data = error.response.data
+    // 从 localstorage 获取 token
+    const token = storage.get(ACCESS_TOKEN)
+    if (error.response.status === 403) {
+      notification.error({
+        message: 'Forbidden',
+        description: data.message
+      })
+    }
+    if (error.response.status === 401 && !(data.result && data.result.isLogin)) {
+      notification.error({
+        message: 'Unauthorized',
+        description: 'Authorization verification failed'
+      })
+      if (token) {
+        store.dispatch('Logout').then(() => {
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
+        })
+      }
+    }
+  }
+  return Promise.reject(error)
 }
 
-// http method
+// request interceptor
+request.interceptors.request.use(config => {
+  const token = storage.get(ACCESS_TOKEN)
+  // 如果 token 存在
+  // 让每个请求携带自定义 token 请根据实际情况自行修改
+  if (token) {
+    config.headers['Access-Token'] = token
+  }
+  return config
+}, errorHandler)
+
+// response interceptor
+request.interceptors.response.use((response) => {
+  return response.data
+}, errorHandler)
+
+const installer = {
+  vm: {},
+  install (Vue) {
+    Vue.use(VueAxios, request)
+  }
+}
+
 const METHOD = {
   GET: 'get',
   POST: 'post'
 }
 
-/**
- * axios请求
- * @param url 请求地址
- * @param method {METHOD} http method
- * @param params 请求参数
- * @returns {Promise<AxiosResponse<T>>}
- */
-async function request(url, method, params) {
-  switch (method) {
-    case METHOD.GET:
-      return axios.get(url, {params})
-    case METHOD.POST:
-      return axios.post(url, params)
-    default:
-      return axios.get(url, {params})
-  }
-}
-
-/**
- * 设置认证信息
- * @param auth {Object}
- * @param authType {AUTH_TYPE} 认证类型，默认：{AUTH_TYPE.BEARER}
- */
-function setAuthorization(auth, authType = AUTH_TYPE.BEARER) {
-  switch (authType) {
-    case AUTH_TYPE.BEARER:
-      Cookie.set(xsrfHeaderName, 'Bearer ' + auth.token, {expires: auth.expireAt})
-      break
-    case AUTH_TYPE.BASIC:
-    case AUTH_TYPE.AUTH1:
-    case AUTH_TYPE.AUTH2:
-    default:
-      break
-  }
-}
-
-/**
- * 移出认证信息
- * @param authType {AUTH_TYPE} 认证类型
- */
-function removeAuthorization(authType = AUTH_TYPE.BEARER) {
-  switch (authType) {
-    case AUTH_TYPE.BEARER:
-      Cookie.remove(xsrfHeaderName)
-      break
-    case AUTH_TYPE.BASIC:
-    case AUTH_TYPE.AUTH1:
-    case AUTH_TYPE.AUTH2:
-    default:
-      break
-  }
-}
-
-/**
- * 检查认证信息
- * @param authType
- * @returns {boolean}
- */
-function checkAuthorization(authType = AUTH_TYPE.BEARER) {
-  switch (authType) {
-    case AUTH_TYPE.BEARER:
-      if (Cookie.get(xsrfHeaderName)) {
-        return true
-      }
-      break
-    case AUTH_TYPE.BASIC:
-    case AUTH_TYPE.AUTH1:
-    case AUTH_TYPE.AUTH2:
-    default:
-      break
-  }
-  return false
-}
+export default request
 
 export {
   METHOD,
-  AUTH_TYPE,
-  request,
-  setAuthorization,
-  removeAuthorization,
-  checkAuthorization
+  installer as VueAxios,
+  request as axios
 }

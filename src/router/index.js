@@ -1,19 +1,20 @@
+
+
 import Vue from 'vue'
-import {checkAuthorization} from '@/utils/request'
 import Router from 'vue-router'
-import {options, loginIgnore} from './config'
+import { constantRouterMap } from '@/router/router.config'
+
+//hack router push callback
+const originalPush = Router.prototype.push
+Router.prototype.push = function push (location, onResolve, onReject) {
+  if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
+  return originalPush.call(this, location).catch(err => err)
+}
 
 Vue.use(Router)
 
-const router =  new Router(options)
-
-// 登录拦截
-router.beforeEach((to, from, next) => {
-  if (!loginIgnore.includes(to) && !checkAuthorization()) {
-    next({path: '/login'})
-  } else {
-    next()
-  }
+export default new Router({
+  mode: 'history',
+  routes: constantRouterMap
 })
 
-export default router

@@ -1,7 +1,7 @@
 let path = require('path')
 const ThemeColorReplacer = require('webpack-theme-color-replacer')
-const {getThemeColors, modifyVars} = require('./src/utils/themeUtil')
-const {resolveCss} = require('./src/utils/theme-color-replacer-extend')
+const { getThemeColors, modifyVars } = require('./src/utils/themeUtil')
+const { resolveCss } = require('./src/utils/theme-color-replacer-extend')
 
 module.exports = {
   pluginOptions: {
@@ -16,7 +16,6 @@ module.exports = {
       new ThemeColorReplacer({
         fileName: 'css/theme-colors-[contenthash:8].css',
         matchColors: getThemeColors(),
-        injectCss: true,
         resolveCss
       })
     )
@@ -26,7 +25,7 @@ module.exports = {
     if (process.env.NODE_ENV === 'production') {
       config.plugin('optimize-css')
         .tap(args => {
-            args[0].cssnanoOptions.preset[1].colormin = false
+          args[0].cssnanoOptions.preset[1].colormin = false
           return args
         })
     }
@@ -41,8 +40,14 @@ module.exports = {
       }
     }
   },
-  publicPath: process.env.NODE_ENV === 'production' ? '/vue-antd-admin/' : '/',
-  outputDir: 'dist',
-  assetsDir: 'static',
-  productionSourceMap: false
+  //publicPath: './',
+  //outputDir: 'dist',
+  //assetsDir: 'static',
+  // productionSourceMap: false
+
+  // disable source map in production
+  productionSourceMap: false,
+  lintOnSave: undefined,
+  // babel-loader no-ignore node_modules/*
+  transpileDependencies: []
 }
